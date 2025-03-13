@@ -1,5 +1,6 @@
-import { View, Text, Image, Dimensions,FlatList, StyleSheet} from 'react-native'
+import { View, Text, Image, Dimensions, FlatList, StyleSheet } from 'react-native'
 import React, { useState } from 'react'
+import * as Haptics from 'expo-haptics'
 import Animated, { FadeIn, FadeOut, interpolate, interpolateColor, runOnJS, SharedValue, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 
 
@@ -53,16 +54,16 @@ function CarouselItem ({imageUri,index, scrollX}:{imageUri:string,index:number,s
 }
 const CircularSlider = () => {
   const scrollX = useSharedValue(0);
-  const [ activeIndex, setActiveIndex]=useState( 0 )
-  const onScroll = useAnimatedScrollHandler(e=>{
+  const [activeIndex, setActiveIndex] = useState(0)
+  
+  const onScroll = useAnimatedScrollHandler(e => {
     scrollX.value = e.contentOffset.x/_itemTotalSize
     const newActiveIndex = Math.round(scrollX.value)
 
-    if(activeIndex !== newActiveIndex){
-     runOnJS(setActiveIndex)(newActiveIndex)
-
+    if (activeIndex !== newActiveIndex) {
+      runOnJS(setActiveIndex)(newActiveIndex)
+      runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Heavy)
     }
-
   })
   return (
     <View style={{flex:1, justifyContent:"flex-end", backgroundColor:"black"}}>
