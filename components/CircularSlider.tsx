@@ -1,4 +1,4 @@
-import { View, Text, Image, Dimensions, FlatList, StyleSheet } from 'react-native'
+import { View, Text, Image, Dimensions, FlatList, StyleSheet, StatusBar } from 'react-native'
 import React, { useState } from 'react'
 import * as Haptics from 'expo-haptics'
 import Animated, { FadeIn, FadeOut, interpolate, interpolateColor, runOnJS, SharedValue, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
@@ -62,20 +62,33 @@ const CircularSlider = () => {
 
     if (activeIndex !== newActiveIndex) {
       runOnJS(setActiveIndex)(newActiveIndex)
-      runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Heavy)
+      runOnJS(Haptics.notificationAsync)(Haptics.NotificationFeedbackType.Success)
     }
   })
   return (
-    <View style={{flex:1, justifyContent:"flex-end", backgroundColor:"black"}}>
-      <View style={[StyleSheet.absoluteFillObject]}>
+    <View style={{
+      flex: 1, 
+      justifyContent: "flex-end", 
+      backgroundColor: "transparent",
+      marginTop: -(StatusBar.currentHeight ?? 0) // Add this line
+    }}>
+      <View style={[
+        StyleSheet.absoluteFillObject,
+        { top: -(StatusBar.currentHeight ?? 0) } // Add this line
+      ]}>
         <Animated.Image 
-        entering={FadeIn.duration(300)}
-        exiting={FadeOut.duration(300)}
-        key={`image-${activeIndex}`}
-        source={{uri:images[activeIndex]}}
-        style={{flex:1}}
+          entering={FadeIn.duration(300)}
+          exiting={FadeOut.duration(300)}
+          key={`image-${activeIndex}`}
+          source={{uri:images[activeIndex]}}
+          style={{
+            flex: 1,
+            width: '100%',
+            height: '100%'
+          }}
+          resizeMode="cover"
         /> 
-        </View>
+      </View>
       <Animated.FlatList
       style={{flexGrow:0,height:_itemSize*2 }}
       contentContainerStyle={{

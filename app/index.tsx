@@ -1,15 +1,18 @@
 import CircularSlider from "@/components/CircularSlider";
-import { Text, View } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { View, SafeAreaView } from "react-native";
 
 export default function Index() {
   return (
-    <View
-      style={{
-        flex: 1,
-      
-      }}
-    >
-     <CircularSlider/>
-    </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
+      <View style={{ flex: 1 }}>
+        <StatusBar 
+          translucent={true}
+          backgroundColor="transparent"
+          style="light"
+        />
+        <CircularSlider/>
+      </View>
+    </SafeAreaView>
   );
 }
