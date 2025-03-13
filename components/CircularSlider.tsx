@@ -1,6 +1,6 @@
-import { View, Text, Image, Dimensions,FlatList} from 'react-native'
-import React from 'react'
-import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated'
+import { View, Text, Image, Dimensions,FlatList, StyleSheet} from 'react-native'
+import React, { useState } from 'react'
+import Animated, { FadeIn, FadeOut, interpolate, interpolateColor, runOnJS, SharedValue, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 
 
 const images = [
@@ -16,23 +16,67 @@ const images = [
 const {width}= Dimensions.get('screen')
 const _itemSize = width*0.26
 const _spacing = 12;
-function CarouselItem ({imageUri,index}:{imageUri:string,index:number}){
-    return <View>
-        <Image
-        source={{uri:imageUri}}
-        style={{width:_itemSize,height:_itemSize,borderRadius:_itemSize/2}}
-        />
-    </View>
+const _itemTotalSize = (_itemSize+_spacing)
+
+function CarouselItem ({imageUri,index, scrollX}:{imageUri:string,index:number,scrollX:SharedValue<number>}){
+   
+  const stylez = useAnimatedStyle(()=>{
+    return {
+      borderWidth:4,
+      borderColor:interpolateColor(
+        scrollX.value,
+        [index-1,index,index+1],
+        ['transparent','white','transparent']
+      ),
+      transform:[{
+        translateY:interpolate(scrollX.value,
+          [index-1,index,index+1],
+          [_itemSize/3,0,_itemSize/3]
+        )
+      }]
+    }
+  })
+   
+  return (
+    <Animated.View style={[{
+      width: _itemSize,
+      height: _itemSize,
+      borderRadius: _itemSize / 2 
+    }, stylez]}>
+      <Image
+        source={{ uri: imageUri }}
+        style={{ flex: 1, borderRadius: _itemSize / 2 }}
+      />
+    </Animated.View>
+  );
+  
 }
 const CircularSlider = () => {
   const scrollX = useSharedValue(0);
+  const [ activeIndex, setActiveIndex]=useState( 0 )
   const onScroll = useAnimatedScrollHandler(e=>{
-    scrollX.value = e.contentOffset.x
+    scrollX.value = e.contentOffset.x/_itemTotalSize
+    const newActiveIndex = Math.round(scrollX.value)
+
+    if(activeIndex !== newActiveIndex){
+     runOnJS(setActiveIndex)(newActiveIndex)
+
+    }
+
   })
   return (
-    <View style={{flex:1, justifyContent:"flex-end",}}>
+    <View style={{flex:1, justifyContent:"flex-end", backgroundColor:"black"}}>
+      <View style={[StyleSheet.absoluteFillObject]}>
+        <Animated.Image 
+        entering={FadeIn.duration(300)}
+        exiting={FadeOut.duration(300)}
+        key={`image-${activeIndex}`}
+        source={{uri:images[activeIndex]}}
+        style={{flex:1}}
+        /> 
+        </View>
       <Animated.FlatList
-      style={{flexGrow:0,paddingBottom:_itemSize }}
+      style={{flexGrow:0,height:_itemSize*2 }}
       contentContainerStyle={{
         gap:_spacing,
         paddingHorizontal: (width-_itemSize)/2
@@ -43,6 +87,7 @@ const CircularSlider = () => {
         return <CarouselItem
          imageUri = {item}
          index = {index}
+         scrollX = {scrollX}
         />
       }}
       horizontal
@@ -51,9 +96,8 @@ const CircularSlider = () => {
       onScroll={onScroll}
       //scrollEventThrottle = {1000/60}~ 16ms
       scrollEventThrottle={16}
-      snapToInterval={_itemSize+_spacing}
+      snapToInterval={_itemTotalSize}
       decelerationRate={'fast'}
-      
       />
     </View>
   )
